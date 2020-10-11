@@ -1,0 +1,8 @@
+{
+  "env": {
+    "DEBUG": "true"
+  },
+  "nodemonConfig": {
+    "ignore": ["**/data/**", "README"]
+  }
+}
