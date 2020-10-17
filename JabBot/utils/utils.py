@@ -5,8 +5,8 @@ import random
 from bs4 import BeautifulSoup
 from selenium import webdriver
 
-from settings import (DATA_DIR, PREFIX, VOWELS, SLICKDEALS_HOMEPAGE,
-    JABHAX_ICON, WORDS_DICTIONARY)
+from settings import (DATA_DIR, PREFIX, VOWELS, JOKES, SLICKDEALS_HOMEPAGE,
+    DEALSTATE_JSON, JABHAX_ICON, WORDS_DICTIONARY)
 
 
 EMPTY = discord.Embed.Empty
@@ -88,12 +88,12 @@ def get_words_dict():
 # Slickdeals Functions
 def get_dealstate():
     deals = {}
-    with open(os.path.join(DATA_DIR, 'dealstate.json'), 'r') as deals_file:
+    with open(DEALSTATE_JSON, 'r') as deals_file:
         deals = json.load(deals_file)
     return deals
 
 def set_dealstate(state):
-    with open(os.path.join(DATA_DIR, 'dealstate.json'), 'w') as outfile:
+    with open(DEALSTATE_JSON, 'w') as outfile:
         outfile.write(json.dumps(state))
 
 def deal_format(deal):
@@ -142,7 +142,7 @@ def parse_featured_deal(item):
 # Yomamma Jokes
 def get_random_joke():
     no_joke = 'I got no YoMama jokes right now. Please try again later.'
-    with open(os.path.join(DATA_DIR, 'jokes.json'), 'r') as jokes_file:
+    with open(JOKES, 'r') as jokes_file:
         jokes = json.load(jokes_file)
         random_category = random.choice(list(jokes.keys()))
         joke = (no_joke if random_category not in jokes else

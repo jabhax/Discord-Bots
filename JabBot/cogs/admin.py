@@ -83,12 +83,15 @@ class Admin(commands.Cog):
             create_field('AFK Channel', ctx.guild.afk_channel, True)
         ]
         num_emoji_fields, emoji_str = 0, ''
+        num_emojis_in_field = 0
         for e in ctx.guild.emojis:
-            if e.is_usable() and len(emoji_str) <= 1000:
+            if e.is_usable() and len(emoji_str) <= 990:
                 emoji_str += str(e)
+                num_emojis_in_field += 1
             else:
                 num_emoji_fields += 1
-                field_name = f'Custom Emojies {num_emoji_fields}'
+                num_emojis_in_field = 0
+                field_name = f'Custom Emojies {num_emoji_fields} ({num_emojis_in_field} emojis)'
                 fields.append(create_field(field_name, emoji_str))
                 emoji_str = ''
         if len(emoji_str) > 0: num_emoji_fields += 1

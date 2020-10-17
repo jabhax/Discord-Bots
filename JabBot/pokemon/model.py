@@ -1,8 +1,9 @@
-import io
+from io import BytesIO
 import random
 import discord
 import time
 import pokebase as pb
+from PIL import Image, ImageDraw, ImageFont
 
 from .pokemon import Pokemon
 from settings import (PK_DATA_PATH, PK_JSON, DEX_ID_TO_NAME_JSON, NAME_TO_DEX_ID_JSON,
@@ -62,7 +63,8 @@ class Pokedex:
     GEN7 = (722, 809)
     GEN8 = (810, 893)
 
-    def __init__(self,  max_gen=1):
+    def __init__(self, client, max_gen=1):
+        self.client = client
         self.PK_CH = None
         self.max_gen = max_gen
         self.files = []
@@ -129,7 +131,7 @@ class Pokedex:
             if name in PK_JSON:
                 return True, name
         if type(name) is discord.Emoji:
-            in_json, name = self.check_in_json(name.name)
+            in_json, name = self.check_in_json(self.clean_emoji_name(name.name))
             return in_json, name
         return False, name
 
@@ -305,7 +307,6 @@ class Pokedex:
         else:
             raise ValueError(f'COULD NOT FIND TINY SPR {id}')
         return f'{PKMN_SPRITE_MENU}{id}.gif'
-        # return f'../data/pokemon_data/pokemon/menu/{id}.gif'
 
     async def get_types_emoji(self, guild, types):
         '''
@@ -380,13 +381,18 @@ class Pokedex:
                         break
                 else: p = id
         if n not in DEX_ID_TO_NAME_JSON:
-            if int(n) >= 10111: n = id
+            if int(n) >= 10111:
+                n = id
+            elif 808 <= int(n) and int(n) < 10111:
+                n = '807'
             else:
                 for i in range(int(n), 10112):
                     if str(i) in DEX_ID_TO_NAME_JSON:
                         n = str(i)
                         break
                 else: n = id
+        if 807 <= int(n) and int(n) < 10111: n = '807'
+
         prev = (p, self.convert_id_to_name(p))
         next = (n, self.convert_id_to_name(n))
         curr = (id, self.convert_id_to_name(id))
@@ -418,28 +424,31 @@ class Pokedex:
         Pokemon Menu Sprite, Pokemon Front, Pokemon Front-Shiny, Pokemn Back,
         Pokemon Back-Shiny, Pokemon Artwork.
         '''
-        # print(f'emo_name: {emo_name}, emo_path: {emo_path}')
-        emo_name = self.clean_name(emo_name)
+        emo_name = self.clean_emoji_name(emo_name)
         animated, statics = [], []
-        for e in guild.emojis:
-            if emo_name.lower() == e.name.lower():
-                print(f'emo_name: {emo_name}, emo_path: {emo_path}')
-                return e
-            animated.append(e) if e.animated else statics.append(e)
+        # for e in guild.emojis:
+        for g in self.client.guilds:
+            for e in g.emojis:
+                if emo_name.lower() == e.name.lower():
+                    print(f'emo_name: {emo_name}, emo_path: {emo_path}')
+                    return e
+                animated.append(e) if e.animated else statics.append(e)
         else:
             print(f'Could not find {emo_name} emoji in guild emojis.')
         try:
-            if len(animated) >= 50:
-                await self.delete_emojis(guild, animated)
-            if len(statics) >= 50:
-                await self.delete_emojis(guild, statics)
-            with open(emo_path, 'rb') as fd:
-                print(f'emo_name: {emo_name}, emo_path: {emo_path}')
-                b = bytearray(fd.read())
-                # b = io.BytesIO(fd.read())
-                # b.seek(0)
-                emo = await guild.create_custom_emoji(name=emo_name, image=b)
-                print(f'Created {emo.name} Emoji: {emo}')
+            # if len(animated) >= 50:
+            #     await self.delete_emojis(guild, [random.choice(animated)])
+            # if len(statics) >= 50:
+            #     await self.delete_emojis(guild, [random.choice(statics)])
+            # emo_name = emo_name.strip()
+            emo_name = self.clean_emoji_name(emo_name)
+            print(f'emo_name: {emo_name}, emo_path: {emo_path}')
+            with open(emo_path, 'rb') as emoji:
+                print('Creating emoji...')
+                emo = await guild.create_custom_emoji(
+                    name=emo_name, image=emoji.read(), roles=None, reason=None)
+                print(f'Created {emo.name} Emoji: {emo} sleep 1 second')
+                time.sleep(1)
                 return emo
         except:
             err = f'Could not find emoji in {emo_name} with path {emo_path}'
@@ -516,7 +525,7 @@ class Pokedex:
         fields = []
         fields.append(create_field(genders, EMPTY_FV, True))
         fields.append(create_field(' '.join([str(e) for e in types_emo]), EMPTY_FV, True))
-        fields.append(create_field(f'EV-Earn ({pkmn.evs_earned})', EMPTY_FV, True))
+        fields.append(create_field(f'EVs Earned', pkmn.evs_earned, True))
         if detailed:
             fields.append(create_field(f'Species', pkmn.classification, True))
             lh, lw = len(str(pkmn.height)), len(str(pkmn.weight))
@@ -565,8 +574,11 @@ class Pokedex:
         return abilities_str
 
     def clean_emoji_name(self, name):
-        return (str(name).replace('-', '').replace('♀', '').replace('♂', '')
-                .lower())
+        return (
+            str(name).replace('-f', 'f').replace('-m', 'm').replace('♀', 'f')
+                     .replace('-oh', 'oh').replace('-Oh', 'oh')
+                     .replace('♂', 'm').replace('-', '').replace('.', '')
+                     .replace(' ', '').lower())
 
     def clean_name(self, name):
         # name = str(name)
