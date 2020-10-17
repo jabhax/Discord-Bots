@@ -4,12 +4,14 @@ from discord.ext import commands
 from settings import PREFIX, BOT_PROFILE_PIC, DEBUG_LOGS
 from utils.utils import (mention, text_to_owo, embedded, create_fields,
     parse_embed_user_params, notify_user)
+from ranks.model import Ranks
 
 
 class Basic(commands.Cog):
     # Commands in the Basic Cogs Class
     def __init__(self, bot):
         self._bot = bot
+        self.rk = Ranks(client=self._bot)
 
     # @commands.Cog.listener()
     # async def on_command_error(self, ctx, ex):
@@ -39,9 +41,15 @@ class Basic(commands.Cog):
     @commands.Cog.listener()
     async def on_message(self, message):
         if message.content.upper().startswith("."):
-            # if message.author.bot: return
-            # args = message.content.split(" ")
-            # await message.channel.send("%s" % (" ".join(args[1:])))
+            if message.author.bot: return
+            ulogs = self.rk.get_user_logs(message.author)
+            ts = str(message.created_at)
+            ulogs['last_sent_message_ts'] = ts
+            for cmd in self._bot.commands:
+                if cmd.name.lower() in message.content.lower():
+                    ulogs['command_activity'].append((message.content, ts))
+                    break
+            self.rk.save_user_logs(message.author, ulogs)
             await message.delete()
 
     @commands.command()

@@ -26,7 +26,7 @@ class Pokemon(commands.Cog):
         self._bot = bot
         # dirs = "\n".join([d for d in dir(self._bot)])
         # print(f'{dirs}')
-        self.pd = Pokedex()
+        self.pd = Pokedex(self._bot)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -77,17 +77,9 @@ class Pokemon(commands.Cog):
         Usage:
             [PREFIX]populate
         '''
-        # Need to fix:
-        #   - Deoxys (386)
-        #   - Type-Null (772)
-        #   - Silvary (773)
-        #   - Tapu-Koko (785)
-        #   - Tapu-Lele (786)
-        #   - Tapu-Bulu (787)
-        #   - Tapu-Fini (788)
         self.pd.PK_CH = discord.utils.get(ctx.guild.text_channels, name="pokedex")
-        for id in range(102, 807):
-            # id = random.randint(1, 807)
+        for id in range(1, 11):
+            id = random.randint(1, 807)
             async with ctx.channel.typing():
                 pk_embed, files, pkmn, prv, nxt = (
                     await self.pd.embed_pokemon(ctx.guild, str(id)))

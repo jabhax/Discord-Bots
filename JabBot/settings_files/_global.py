@@ -3,11 +3,12 @@ import json
 import requests
 
 
+# GLOBALS
 SETTINGS_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(SETTINGS_DIR)
 DATA_DIR = os.path.join(ROOT_DIR, 'data')
-USER_RANKS_PATH = os.path.join(DATA_DIR, 'user_ranks.json')
 
+# POKEMON GLOBALS
 PKMN_DIR = os.path.join(DATA_DIR, 'pokemon_data')
 DEX_ID_TO_NAME_DIR = os.path.join(PKMN_DIR, 'pokemon/dexid_to_name.json')
 NAME_TO_DEX_ID_DIR = os.path.join(PKMN_DIR, 'pokemon/name_to_dexid.json')
@@ -15,14 +16,14 @@ PK_DATA_PATH = os.path.join(PKMN_DIR, 'pokemon/pokemon_data.json')
 ABILITY_NORMAL_PATH = os.path.join(PKMN_DIR, 'ability_normal.png')
 ABILITY_HIDDEN_PATH = os.path.join(PKMN_DIR, 'ability_hidden.png')
 POKEBALLHD_PATH = os.path.join(PKMN_DIR, 'pokeballhd.png')
-
+BATTLE_BG_PATH = os.path.join(PKMN_DIR, 'battle_bg.png')
+TRANSPARENT = os.path.join(PKMN_DIR, 'transparent.png')
 PKMN_SPRITE_BATTLE_FRONT_NORMAL = os.path.join(PKMN_DIR, 'pokemon/battle/front/normal/')
 PKMN_SPRITE_BATTLE_FRONT_SHINY = os.path.join(PKMN_DIR, 'pokemon/battle/front/shiny/')
 PKMN_SPRITE_BATTLE_BACK_NORMAL = os.path.join(PKMN_DIR, 'pokemon/battle/back/normal/')
 PKMN_SPRITE_BATTLE_BACK_SHINY = os.path.join(PKMN_DIR, 'pokemon/battle/back/shiny/')
 PKMN_SPRITE_ARTWORK = os.path.join(PKMN_DIR, 'pokemon/artwork/ken_sugimori/')
 PKMN_SPRITE_MENU = os.path.join(PKMN_DIR, 'pokemon/menu/')
-
 PKMN_APRICORN_DIR = os.path.join(PKMN_DIR, 'icons/apricorn')
 PKMN_AVCANDY_DIR = os.path.join(PKMN_DIR, 'icons/av-candy')
 PKMN_BALLS_DIR = os.path.join(PKMN_DIR, 'icons/ball/')
@@ -47,22 +48,35 @@ PKMN_POKECANDY_DIR = os.path.join(PKMN_DIR, 'icons/poke-candy')
 PKMN_POKEMON_DIR = os.path.join(PKMN_DIR, 'icons/pokemon/')
 PKMN_TYPES_DIR = os.path.join(PKMN_DIR, 'misc/types/gen8/')
 
+# BOT GLOBALS
 PREFIX = os.getenv('PREFIX', False)
 DISCORD_BOT_TOKEN = os.getenv('DISCORD_BOT_TOKEN', False)
-
-SLICKDEALS_HOMEPAGE = 'https://slickdeals.net'
 JABHAX_ICON = 'https://www.jabhax.io/static/portfolio/images/logo_transparent.png'
-BOT_PROFILE_PIC = os.path.join(DATA_DIR, 'bot_profile_photo.jpeg')
-PIXEL_PLAYGROUND_LOGO = os.path.join(DATA_DIR, 'pixel_playground_logo.png')
+BOT_PROFILE_PIC = os.path.join(DATA_DIR, 'bot_data/bot_profile_photo.jpeg')
+PIXEL_PLAYGROUND_LOGO = os.path.join(DATA_DIR, 'bot_data/pixel_playground_logo.png')
+# TEXT GLOBALS
 VOWELS = ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U']
-WORDS_DICTIONARY = os.path.join(DATA_DIR, 'words_dictionary.json')
+WORDS_DICTIONARY = os.path.join(DATA_DIR, 'text_data/words_dictionary.json')
+JOKES = os.path.join(DATA_DIR, 'text_data/jokes.json')
 
+# REDDIT GLOBALS
 REDDIT_APP_ID = os.getenv('REDDIT_APP_ID', False)
 REDDIT_APP_SECRET = os.getenv('REDDIT_APP_SECRET', False)
 REDDIT_ENABLED_MEME_SUBREDDITS = ['funny', 'memes']
 REDDIT_ENABLED_NSFW_SUBREDDITS = ['wtf']
 
+# DEBUG GLOBALS
 DEBUG_LOGS = bool(eval(os.getenv('DEBUG_LOGS')))
+
+# RANKS GLOBALS
+RANKS_CONFIG_DIR = os.path.join(DATA_DIR, 'ranks_data/ranks_config.json')
+USER_RANKS_PATH = os.path.join(DATA_DIR, 'ranks_data/user_ranks.json')
+USER_LOGS_DIR = os.path.join(DATA_DIR, 'ranks_data/user_logs/')
+
+# SLICKDEALS GLOBALS
+SLICKDEALS_HOMEPAGE = 'https://slickdeals.net'
+DEALSTATE_JSON = os.path.join(DATA_DIR, 'slickdeals_data/dealstate.json')
+
 
 def write_resource(path, data, write_ops='w'):
     with open(os.path.join(path), write_ops) as f:
@@ -73,6 +87,8 @@ def load_resource(path):
     with open(os.path.join(path), 'r') as f:
         resource = json.load(f)
     return resource
+
+
 try:
     PK_JSON = load_resource(PK_DATA_PATH)
 except:
@@ -82,4 +98,5 @@ except:
 # PK_JSON = load_resource('/Users/justinbarros/Desktop/pokemon_data.json')
 DEX_ID_TO_NAME_JSON = load_resource(DEX_ID_TO_NAME_DIR)
 NAME_TO_DEX_ID_JSON = load_resource(NAME_TO_DEX_ID_DIR)
+RANKS_CONFIG = load_resource(RANKS_CONFIG_DIR)
 # USER_RANKS_JSON = load_resource(USER_RANKS_PATH)
