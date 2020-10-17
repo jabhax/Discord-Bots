@@ -223,12 +223,17 @@ class Ranks:
             if not (role.name in USERS[uid]['rank']):
                 USERS[uid]['rank'].append(role.name)
                 await user.add_roles(role)
+
             if not USERS[uid]['stack_ranks']:
                 gconfig = self.get_guild_config(user.guild)
                 for rr in gconfig['ranks_roles']:
                     if rr[1] != role.name:
                         old_roles = self.get_rank_role(name=rr[1])
                         await user.remove_roles(old_roles)
+            else:
+                for rank in USERS[uid]['rank']:
+                    rank_role = self.get_rank_role(name=rank)
+                    await user.add_roles(rank_role)
             write_resource(USER_RANKS_PATH, USERS)
         else:
             old_rank = self.get_highest_rank(USERS[uid]['rank'])
