@@ -260,6 +260,10 @@ class Ranks(commands.Cog):
         uid = str(ctx.message.author.id)
         USERS[uid]['stack_ranks'] = not USERS[uid]['stack_ranks']
         write_resource(USER_RANKS_PATH, USERS)
+        async with ctx.channel.typing():
+            msg = f'{ctx.message.author.name}\'s ranks switched to '
+            msg += 'stacked' if USERS[uid]['stack_ranks'] else 'unstacked'
+            await ctx.channel.send(msg)
 
 
 def setup(bot):
