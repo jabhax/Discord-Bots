@@ -1,5 +1,3 @@
-David Branch baybee
-
 First install the dependencies:
 ```
 pip install -r requirements.txt
