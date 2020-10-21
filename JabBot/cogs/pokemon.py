@@ -79,7 +79,7 @@ class Pokemon(commands.Cog):
         '''
         self.pd.PK_CH = discord.utils.get(ctx.guild.text_channels, name="pokedex")
         for id in range(1, 11):
-            id = random.randint(1, 807)
+            #id = random.randint(1, 807)
             async with ctx.channel.typing():
                 pk_embed, files, pkmn, prv, nxt = (
                     await self.pd.embed_pokemon(ctx.guild, str(id)))
