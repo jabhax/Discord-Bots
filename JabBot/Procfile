@@ -1,2 +1,0 @@
-pipinstall: pip install -r JabBot/requirements.txt
-worker: python JabBot/main.py
