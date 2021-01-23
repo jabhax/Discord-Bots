@@ -1,2 +1,2 @@
-pipinstall: pip install -r JabBot/requirements.txt
-worker: python JabBot/main.py
+pipinstall: pip install -r requirements.txt
+worker: python main.py
