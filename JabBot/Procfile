@@ -1,1 +1,1 @@
-worker: nodemon main.py --ignore "**/data/**"
+worker: python main.py --ignore "**/data/**"
