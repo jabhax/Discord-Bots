@@ -1,0 +1,4 @@
+"scripts": {
+  "server": "nodemon main.py --ignore '**/data/**'",
+  "start": "nodemon main.py --ignore '**/data/**'"
+},
