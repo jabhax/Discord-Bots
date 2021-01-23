@@ -1,4 +1,6 @@
 import discord
+import time
+import multiprocessing
 from discord.ext import commands
 from PIL import Image, ImageDraw, ImageFilter, ImageSequence
 from io import BytesIO
@@ -9,6 +11,21 @@ from pokemon.model import Pokedex
 
 names = ['img{:02d}.gif'.format(i) for i in range(20)]
 
+def build_frames(pk1_f, pk2_b, frameIndex, bg, return_dict):
+    st = time.time()
+    background, im1, im2 = Image.open(bg), Image.open(pk1_f), Image.open(pk2_b)
+    im1.seek(frameIndex), im2.seek(frameIndex)
+    pkmn1, pkmn2 = im1.convert("RGBA"), im2.convert("RGBA")
+    imageInMemory = BytesIO()
+    new_img = Image.new('RGBA', (800,400), (0, 0, 0, 0))
+    new_img.paste(background, (0,0))
+    new_img.paste(pkmn1, (600, 100), mask=pkmn1)
+    new_img.paste(pkmn2, (100, 300), mask=pkmn2)
+    new_img.save(f'/Applications/Discord-Bots/JabBot/data/{imageInMemory}', 'png')
+    imageInMemory.name = "/Applications/Discord-Bots/JabBot/data/gifInMemory_" + str(frameIndex) + ".png"
+    return_dict['images'].append(Image.open(imageInMemory))
+    print(f'Frame {frameIndex} took {time.time()-st}s')
+    return return_dict
 
 class ImageManipulation(commands.Cog):
     def __init__(self, bot):
@@ -44,37 +61,55 @@ class ImageManipulation(commands.Cog):
 
     @commands.command()
     async def battle(self, ctx, pk1name: str='charizard', pk2name: str='blastoise'):
+        st = time.time()
         pk1, pk2 = self.dex.get_pokemon(pk1name), self.dex.get_pokemon(pk2name)
-        pk1_f, pk1_b = pk1.sprites['battle_front'], pk1.sprites['battle_back']
-        pk2_f, pk2_b = pk2.sprites['battle_front'], pk2.sprites['battle_back']
-        bg_im_orig, im1, im2 = BytesIO(), BytesIO(), BytesIO()
-        bg_im_orig, im1, im2 = Image.open(BATTLE_BG_PATH), Image.open(pk1_f), Image.open(pk2_b)
-        transparent_fg =  Image.open(TRANSPARENT)
-        background = BytesIO()
+        pk1_f = pk1.sprites['battle_front']
+        pk2_b = pk2.sprites['battle_back']
+        print(f'Getting pokemon took {time.time()-st}s')
 
-        pk1_frames = []
-        for frame in ImageSequence.Iterator(im1):
-            frame = frame.copy()
-            frame.paste(transparent_fg, mask=transparent_fg)
-            frame.seek(0)
-            pk1_frames.append(frame)
+        st = time.time()
+        background, im1, im2 = Image.open(BATTLE_BG_PATH), Image.open(pk1_f), Image.open(pk2_b)
+        print(f'Initial Image.open() for pokemon took {time.time()-st}s')
+        st = time.time()
+        procs, images, length = [], [], min(im1.n_frames, im2.n_frames)
+        self.return_dict = {'images': []}
+        for frameIndex in range(0, length):
+            p = multiprocessing.Process(
+                target=build_frames,
+                args=(pk1_f, pk2_b, frameIndex, BATTLE_BG_PATH, self.return_dict))
+            procs.append(p)
+            p.start()
+        for p in procs: p.join()
+        images = self.return_dict['images']
+        for v in self.return_dict.values(): print(f'v: {v}')
 
-        pk1_frames[0].save('pk1_battle.gif', 'GIF', save_all=True, append_images=pk1_frames[1:])
-        pk2_frames = []
-        for frame in ImageSequence.Iterator(im1):
-            frame = frame.copy()
-            frame.paste(transparent_fg, mask=transparent_fg)
-            pk2_frames.append(frame)
-        pk2_frames[0].save('pk2_battle.gif', save_all=True, append_images=pk2_frames[1:])
+        # for frameIndex in range(0, length):
+        #     fst = time.time()
+        #     im1.seek(frameIndex), im2.seek(frameIndex)
+        #     pkmn1, pkmn2 = im1.convert("RGBA"), im2.convert("RGBA")
+        #     imageInMemory = BytesIO()
+        #     new_img = Image.new('RGBA', (800,400), (0, 0, 0, 0))
+        #     new_img.paste(background, (0,0))
+        #     new_img.paste(pkmn1, (600, 100), mask=pkmn1)
+        #     new_img.paste(pkmn2, (100, 300), mask=pkmn2)
+        #     new_img.save(imageInMemory, 'png')
+        #     imageInMemory.name = "gifInMemory_" + str(frameIndex) + ".png"
+        #     images.append(Image.open(imageInMemory))
+        #     print(f'Frame {frameIndex} took {time.time()-fst}s')
+        print(f'Proccessing {length} frames took {time.time()-st}s')
 
-        all_frames = pk1_frames[1:]+pk2_frames[1:]
-        bg_img = bg_im_orig.copy()
-        bg_img.paste(im1, (600, 100))
-        bg_img.paste(im2, (100, 300))
-        bg_img.save(background, 'GIF', save_all=True, append_images=all_frames, duration=100, loop=0)
-        background.seek(0)
-        background.name = 'swag.gif'
-        await ctx.send(file=discord.File(background))
+        st = time.time()
+        gifInMemory = BytesIO()
+        images[0].save(gifInMemory, "gif", save_all=True, optimize=True,
+                       loop=0, duration=20, append_images=images[1:])
+        gifInMemory.name = "battle.gif"
+        gifInMemory.seek(0)
+        print(f'Saving took {time.time()-st}s')
+
+        st = time.time()
+        await ctx.send(file=discord.File(gifInMemory))
+        print(f'sending took {time.time()-st}s')
+
 
 def setup(bot):
     bot.add_cog(ImageManipulation(bot))
