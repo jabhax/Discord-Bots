@@ -1,1 +1,1 @@
-worker: nodemon JabBot/main.py --ignore "**/data/**"
+worker: python JabBot/main.py
